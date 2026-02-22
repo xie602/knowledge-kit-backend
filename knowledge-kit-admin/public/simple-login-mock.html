@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识锦囊后台 - 登录（模拟模式）</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .login-container {
+      background: white;
+      padding: 40px 50px;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 450px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    
+    .mode-badge {
+      background: #ff6b6b;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .status.error {
+      background: #fee;
+      color: #c33;
+      display: block;
+    }
+    
+    .status.success {
+      background: #efe;
+      color: #3c3;
+      display: block;
+    }
+    
+    .info-box {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>知识锦囊后台</h1>
+    <div class="mode-badge">⚠️ 模拟模式 - 云函数未部署</div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">用户名</label>
+        <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+      </div>
+      <div class="form-group">
+        <label for="password">密码</label>
+        <input type="password" id="password" name="password" placeholder="请输入密码" required>
+      </div>
+      <button type="submit">登录</button>
+    </form>
+    
+    <div id="status" class="status"></div>
+    
+    <div class="info-box">
+      <strong>说明：</strong><br>
+      云函数尚未部署到微信云开发环境。<br>
+      当前使用模拟数据，可用于测试前端界面。<br><br>
+      <strong>要使用真实数据，请：</strong><br>
+      1. 打开微信开发者工具<br>
+      2. 导入项目<br>
+      3. 部署云函数到云开发环境<br><br>
+      <strong>登录账号：</strong> admin / admin123
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const statusDiv = document.getElementById('status');
+
+    // 模拟云函数响应
+    const mockLogin = (username, password) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (username === 'admin' && password === 'admin123') {
+            resolve({
+              success: true,
+              message: '登录成功',
+              token: 'mock_token_' + Date.now(),
+              user: {
+                username: 'admin',
+                role: 'admin',
+                _id: 'admin_001'
+              }
+            });
+          } else {
+            reject(new Error('用户名或密码错误'));
+          }
+        }, 500);
+      });
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      statusDiv.className = 'status';
+      statusDiv.textContent = '登录中...';
+      
+      try {
+        const result = await mockLogin(username, password);
+        
+        if (result.success) {
+          statusDiv.className = 'status success';
+          statusDiv.textContent = '✓ 登录成功！（模拟模式）';
+          
+          // 保存token和用户信息
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user', JSON.stringify(result.user));
+          
+          // 显示用户信息
+          setTimeout(() => {
+            alert(`登录成功！\n\n用户名: ${result.user.username}\n角色: ${result.user.role}\nToken: ${result.token.substring(0, 20)}...`);
+          }, 500);
+        }
+      } catch (error) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '✗ 登录失败: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

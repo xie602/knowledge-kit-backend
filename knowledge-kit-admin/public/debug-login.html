@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>调试登录</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .box { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    .input-group { margin: 10px 0; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
+    button { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #1976d2; }
+    .result { background: #fff; padding: 10px; border: 1px solid #ddd; margin-top: 10px; white-space: pre-wrap; font-family: monospace; }
+    .success { background: #e8f5e9; border-left: 4px solid #4caf50; }
+    .error { background: #ffebee; border-left: 4px solid #f44336; }
+  </style>
+</head>
+<body>
+  <h1>🔍 云函数调用调试工具</h1>
+
+  <div class="box">
+    <h3>📝 填写信息</h3>
+    <div class="input-group">
+      <label>云环境ID:</label>
+      <input type="text" id="envId" value="cloud1-7gir6egze217f975">
+    </div>
+    <div class="input-group">
+      <label>云函数名称:</label>
+      <input type="text" id="functionName" value="adminLogin">
+    </div>
+    <div class="input-group">
+      <label>请求数据（JSON格式）:</label>
+      <textarea id="requestData" rows="6">{"username": "admin", "password": "admin123"}</textarea>
+    </div>
+    <button onclick="testFunction()">🧪 测试调用</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    function addResult(title, className, content) {
+      const div = document.createElement('div');
+      div.className = `box ${className}`;
+      div.innerHTML = `<h3>${title}</h3><div class="result">${content}</div>`;
+      document.getElementById('results').appendChild(div);
+    }
+
+    async function testFunction() {
+      document.getElementById('results').innerHTML = '';
+
+      const envId = document.getElementById('envId').value.trim();
+      const functionName = document.getElementById('functionName').value.trim();
+      const requestData = document.getElementById('requestData').value;
+
+      // 尝试不同的URL格式
+      const urls = [
+        {
+          name: '格式1: 标准HTTP格式（双环境ID）',
+          url: `https://${envId}.service.tcloudbase.com/${envId}/${functionName}`
+        },
+        {
+          name: '格式2: 简化格式（单环境ID）',
+          url: `https://${envId}.service.tcloudbase.com/${functionName}`
+        }
+      ];
+
+      for (const item of urls) {
+        addResult(item.name, 'loading', `URL: ${item.url}\n正在请求...`);
+
+        try {
+          const response = await fetch(item.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: requestData
+          });
+
+          const responseText = await response.text();
+
+          if (response.ok) {
+            addResult(`✅ ${item.name}`, 'success',
+              `状态码: ${response.status}\n响应:\n${responseText}`);
+          } else {
+            addResult(`⚠️ ${item.name}`, 'loading',
+              `状态码: ${response.status}\n响应:\n${responseText}`);
+          }
+        } catch (error) {
+          addResult(`❌ ${item.name}`, 'error',
+            `错误: ${error.message}\n错误堆栈:\n${error.stack}`);
+        }
+
+        // 等待1秒
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // 提供调试建议
+      addResult('💡 调试建议', 'loading',
+        `如果所有格式都失败，请检查：
+1. 云环境ID是否正确：${envId}
+2. 云函数是否已部署到云开发环境
+3. 云函数名称是否正确：${functionName}
+4. 网络连接是否正常
+5. 是否需要配置云函数HTTP访问权限
+
+步骤：
+1. 打开微信开发者工具
+2. 进入云开发控制台
+3. 点击"云函数"
+4. 找到 ${functionName} 云函数
+5. 点击进入详情
+6. 查看"HTTP访问"配置`);
+    }
+  </script>
+</body>
+</html>
