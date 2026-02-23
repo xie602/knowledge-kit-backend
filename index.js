@@ -28,8 +28,10 @@ async function initializeApp() {
   }
 }
 
-// 启动应用前初始化
-initializeApp();
+// 启动应用前初始化（异步执行，不阻塞服务器启动）
+initializeApp().catch(error => {
+  console.error('数据库初始化失败，但服务器将继续运行:', error);
+});
 
 // API根路径
 app.get('/api', (req, res) => {
