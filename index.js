@@ -5,32 +5,22 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3002; // 使用3002端口
 
-// 数据库配置
-const { sequelize, testConnection } = require('./config/database');
-
 // 中间件
 app.use(cors());
 app.use(express.json());
 
-// 初始化数据库
+// 模拟数据库初始化（不实际连接数据库）
 async function initializeApp() {
   try {
-    // 测试数据库连接
-    await testConnection();
-    
-    // 初始化数据库表结构
-    const initDatabase = require('./utils/initDatabase');
-    await initDatabase();
-    
-    console.log('数据库初始化完成');
+    console.log('跳过数据库初始化，直接启动服务');
   } catch (error) {
-    console.error('应用初始化失败:', error);
+    console.error('初始化失败:', error);
   }
 }
 
 // 启动应用前初始化（异步执行，不阻塞服务器启动）
 initializeApp().catch(error => {
-  console.error('数据库初始化失败，但服务器将继续运行:', error);
+  console.error('初始化失败，但服务器将继续运行:', error);
 });
 
 // API根路径
