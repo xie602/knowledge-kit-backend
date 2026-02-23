@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +9,10 @@ const PORT = process.env.PORT || 3002; // 使用3002端口
 // 中间件
 app.use(cors());
 app.use(express.json());
+
+// 静态文件服务 - 必须在API路由之前配置
+app.use('/admin', express.static(path.join(__dirname, 'knowledge-kit-admin', 'dist')));
+app.use('/knowledge-kit-admin', express.static(path.join(__dirname, 'knowledge-kit-admin', 'dist')));
 
 // 模拟数据库初始化（不实际连接数据库）
 async function initializeApp() {
@@ -58,6 +63,31 @@ app.get('/api/users', (req, res) => {
       }
     ]
   });
+});
+
+// 登录接口
+app.post('/api/users/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // 简单的用户名密码验证
+  if (username === 'admin' && password === 'admin123') {
+    res.json({
+      success: true,
+      message: '登录成功',
+      token: 'mock-token-' + Date.now(),
+      user: {
+        id: 1,
+        username: 'admin',
+        nickname: '系统管理员',
+        role: 'admin'
+      }
+    });
+  } else {
+    res.json({
+      success: false,
+      message: '用户名或密码错误'
+    });
+  }
 });
 
 app.get('/api/users/:id', (req, res) => {
@@ -156,12 +186,18 @@ app.get('/', (req, res) => {
   res.json({ message: '知识锦囊后端服务运行中' });
 });
 
-// 404处理
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: '接口不存在'
-  });
+// 静态文件服务 - 处理SPA路由
+app.use('*', (req, res, next) => {
+  // 如果请求的是API路径，继续处理
+  if (req.path.startsWith('/api')) {
+    res.status(404).json({
+      success: false,
+      message: '接口不存在'
+    });
+  } else {
+    // 否则返回index.html，让前端路由处理
+    res.sendFile(path.join(__dirname, 'knowledge-kit-admin', 'dist', 'index.html'));
+  }
 });
 
 // 错误处理中间件
