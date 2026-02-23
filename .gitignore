@@ -6,3 +6,7 @@ logs/
 .idea/
 Thumbs.db
 .DS_Store
+
+# 排除前端管理后台目录
+knowledge-kit-admin/
+web-admin/
