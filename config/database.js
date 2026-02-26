@@ -1,29 +1,10 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+// 数据库配置
+// 注意：当前项目使用微信云开发数据库，不需要 PostgreSQL 数据库
+// 此文件保留为空模块，用于兼容旧代码引用
 
-// 从环境变量获取数据库连接信息
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  logging: console.log,
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  }
-});
-
-// 测试数据库连接
-async function testConnection() {
-  try {
-    await sequelize.authenticate();
-    console.log('数据库连接成功');
-  } catch (error) {
-    console.error('数据库连接失败:', error);
-  }
-}
+console.log('使用微信云开发数据库，不初始化 PostgreSQL 数据库');
 
 module.exports = {
-  sequelize,
-  testConnection
+  sequelize: null,
+  testConnection: () => console.log('跳过数据库连接测试')
 };
