@@ -101,3 +101,11 @@ app.use((err, req, res, next) => {
 
 // 导出app实例供Vercel使用
 module.exports = app;
+
+// 在非Vercel环境中启动服务器
+if (!isVercel) {
+  app.listen(PORT, () => {
+    console.log(`服务器运行在 http://localhost:${PORT}`);
+    console.log(`API文档地址: http://localhost:${PORT}/api`);
+  });
+}
