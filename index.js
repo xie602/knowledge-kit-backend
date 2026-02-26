@@ -6,42 +6,52 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// 检测是否在 Vercel 环境
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_URL;
+
 // 中间件
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 导入路由
-const documentRouter = require('./routes/documentRoutes');
-const userRouter = require('./routes/userRoutes');
-const categoryRouter = require('./routes/categoryRoutes');
-const carouselRouter = require('./routes/carousel');
-const announcementsRouter = require('./routes/announcements');
+// Vercel 环境下只使用简单路由
+if (!isVercel) {
+  // 导入路由（非 Vercel 环境）
+  var documentRouter = require('./routes/documentRoutes');
+  var userRouter = require('./routes/userRoutes');
+  var categoryRouter = require('./routes/categoryRoutes');
+  var carouselRouter = require('./routes/carousel');
+  var announcementsRouter = require('./routes/announcements');
+}
 
 // API路由 - 必须在静态文件之前注册
 app.get('/api', (req, res) => {
   res.json({
     message: '知识锦囊API服务运行中',
     version: '1.0.0',
+    environment: isVercel ? 'vercel' : 'local',
     endpoints: {
-      users: '/api/users',
-      documents: '/api/documents',
-      categories: '/api/categories'
+      health: '/api/health',
+      users: isVercel ? null : '/api/users',
+      documents: isVercel ? null : '/api/documents',
+      categories: isVercel ? null : '/api/categories'
     }
   });
 });
 
 // 健康检查
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: '服务器运行正常' });
+  res.json({ status: 'ok', message: '服务器运行正常', environment: isVercel ? 'vercel' : 'local' });
 });
 
-// 使用路由
-app.use('/api/documents', documentRouter);
-app.use('/api/users', userRouter);
-app.use('/api/categories', categoryRouter);
-app.use('/api/carousel', carouselRouter);
-app.use('/api/announcements', announcementsRouter);
+// 使用路由（非 Vercel 环境）
+if (!isVercel) {
+  app.use('/api/documents', documentRouter);
+  app.use('/api/users', userRouter);
+  app.use('/api/categories', categoryRouter);
+  app.use('/api/carousel', carouselRouter);
+  app.use('/api/announcements', announcementsRouter);
+}
 
 // 云函数代理路由
 app.post('/api/http-proxy', async (req, res) => {
