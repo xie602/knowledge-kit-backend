@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# 环境变量文件（不要提交到git）
+.env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +27,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+

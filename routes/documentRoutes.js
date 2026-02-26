@@ -1,30 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const documentController = require('../controllers/DocumentController');
-const { auth, adminAuth } = require('../middleware/auth'); // 引入新的认证中间件
+
+// 搜索文档 - 模拟数据
+router.get('/search/:keyword', async (req, res) => {
+  try {
+    const { keyword } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+
+    // 模拟搜索结果
+    const mockDocuments = [
+      {
+        id: 1,
+        title: `${keyword} - 数学知识点汇总`,
+        description: '小学数学知识点汇总',
+        grade: '三年级',
+        subject: '数学',
+        type: '知识点汇总',
+        downloadCount: 100,
+        views: 200,
+        coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=math&image_size=square'
+      }
+    ];
+
+    res.json({
+      success: true,
+      data: {
+        documents: mockDocuments,
+        pagination: {
+          total: 1,
+          page: Number(page),
+          limit: Number(limit),
+          pages: 1
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
 
 // 获取文档列表
-router.get('/', documentController.getDocuments);
-
-// 获取文档详情
-router.get('/:id', documentController.getDocumentById);
-
-// 搜索文档
-router.get('/search/:keyword', documentController.searchDocuments);
-
-// 点赞文档
-router.post('/like/:id', documentController.likeDocument);
-
-// 收藏文档（需要认证）
-router.post('/favorite/:id', auth, documentController.toggleFavorite);
-
-// 创建文档（需要管理员权限）
-router.post('/', adminAuth, documentController.createDocument);
-
-// 更新文档（需要管理员权限）
-router.put('/:id', adminAuth, documentController.updateDocument);
-
-// 删除文档（需要管理员权限）
-router.delete('/:id', adminAuth, documentController.deleteDocument);
+router.get('/', async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      documents: [],
+      pagination: { total: 0, page: 1, limit: 10, pages: 0 }
+    }
+  });
+});
 
 module.exports = router;

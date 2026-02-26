@@ -1,107 +1,180 @@
 <template>
   <div class="categories-container">
     <h2>分类管理</h2>
-    <el-card class="categories-card">
-      <template #header>
-        <div class="card-header">
-          <span>分类树结构</span>
-          <div class="header-actions">
-            <el-button type="primary" @click="handleAddCategory">
-              <el-icon><Plus /></el-icon>
-              添加分类
-            </el-button>
-            <el-button @click="handleRefresh">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
-      </template>
-      <div class="categories-content">
-        <!-- 左侧分类树 -->
-        <div class="category-tree">
-          <el-tree
-            ref="categoryTree"
-            :data="categoryTreeData"
-            :props="treeProps"
-            node-key="id"
-            default-expand-all
-            @node-click="handleNodeClick"
-            @node-contextmenu="handleNodeContextMenu"
-          >
-            <template #default="{ node, data }">
-              <div class="tree-node">
-                <span>{{ node.label }}</span>
-                <span class="node-count" v-if="data.count > 0">({{ data.count }})</span>
+    
+    <!-- 标签页 -->
+    <el-tabs v-model="activeTab" type="border-card" class="categories-tabs">
+      <!-- 年级管理标签 -->
+      <el-tab-pane label="年级管理" name="grades">
+        <el-card class="grades-card">
+          <template #header>
+            <div class="card-header">
+              <span>年级列表</span>
+              <div class="header-actions">
+                <el-button type="primary" @click="handleAddGrade">
+                  <el-icon><Plus /></el-icon>
+                  添加年级
+                </el-button>
+                <el-button @click="loadGrades">
+                  <el-icon><Refresh /></el-icon>
+                  刷新
+                </el-button>
               </div>
-            </template>
-          </el-tree>
-        </div>
-        
-        <!-- 右侧分类编辑 -->
-        <div class="category-edit">
-          <div v-if="!selectedCategory" class="empty-state">
-            <el-icon class="empty-icon"><Tree /></el-icon>
-            <p>请选择一个分类进行编辑</p>
+            </div>
+          </template>
+          
+          <div class="grades-content">
+            <div class="grades-main">
+              <!-- 左侧年级表格 -->
+              <div class="grades-table-container">
+                <el-table :data="grades" style="width: 100%" border>
+                  <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                  <el-table-column prop="name" label="年级名称" min-width="120"></el-table-column>
+                  <el-table-column prop="order" label="显示顺序" width="100">
+                    <template #default="{ row }">
+                      <el-input-number v-model="row.order" :min="0" :max="9999" @change="handleGradeOrderChange(row)"></el-input-number>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="status" label="状态" width="100">
+                    <template #default="{ row }">
+                      <el-switch v-model="row.status" @change="handleGradeStatusChange(row)"></el-switch>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="createdAt" label="创建时间" width="180"></el-table-column>
+                  <el-table-column label="操作" width="200" fixed="right">
+                    <template #default="{ row }">
+                      <el-button size="small" @click="handleEditGrade(row)">编辑</el-button>
+                      <el-button size="small" type="danger" @click="handleDeleteGrade(row)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
+            
+            <!-- 右侧真机模拟 -->
+            <div class="category-preview">
+              <PhoneSimulator>
+                <CategorySimulator :categoryList="grades" />
+              </PhoneSimulator>
+            </div>
           </div>
-          <div v-else class="edit-form">
-            <el-form
-              ref="categoryForm"
-              :model="categoryForm"
-              :rules="categoryRules"
-              label-width="120px"
-              class="form"
-            >
-              <el-form-item label="分类名称" prop="name">
-                <el-input v-model="categoryForm.name" placeholder="请输入分类名称"></el-input>
-              </el-form-item>
-              <el-form-item label="父分类">
-                <el-select v-model="categoryForm.parentId" placeholder="请选择父分类">
-                  <el-option label="顶级分类" value="0"></el-option>
-                  <el-option
-                    v-for="item in parentCategoryOptions"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  ></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="分类类型">
-                <el-select v-model="categoryForm.type" placeholder="请选择分类类型">
-                  <el-option label="年级" value="grade"></el-option>
-                  <el-option label="学期" value="semester"></el-option>
-                  <el-option label="科目" value="subject"></el-option>
-                  <el-option label="教材版本" value="version"></el-option>
-                  <el-option label="资料类型" value="type"></el-option>
-                  <el-option label="自定义" value="custom"></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="显示顺序" prop="sort">
-                <el-input-number v-model="categoryForm.sort" :min="0" :max="9999"></el-input-number>
-              </el-form-item>
-              <el-form-item label="状态">
-                <el-switch v-model="categoryForm.status"></el-switch>
-              </el-form-item>
-              <el-form-item label="分类描述">
-                <el-input
-                  v-model="categoryForm.description"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="请输入分类描述"
-                ></el-input>
-              </el-form-item>
-              <el-form-item>
-                <div class="form-actions">
-                  <el-button type="primary" @click="handleSaveCategory">保存</el-button>
-                  <el-button @click="handleCancelEdit">取消</el-button>
-                  <el-button type="danger" @click="handleDeleteCategory" v-if="selectedCategory.id !== '0'">删除</el-button>
+        </el-card>
+      </el-tab-pane>
+      
+      <!-- 分类树结构标签 -->
+      <el-tab-pane label="分类树结构" name="tree">
+        <el-card class="categories-card">
+          <template #header>
+            <div class="card-header">
+              <span>分类树结构</span>
+              <div class="header-actions">
+                <el-button type="primary" @click="handleAddCategory">
+                  <el-icon><Plus /></el-icon>
+                  添加分类
+                </el-button>
+                <el-button @click="handleRefresh">
+                  <el-icon><Refresh /></el-icon>
+                  刷新
+                </el-button>
+              </div>
+            </div>
+          </template>
+          <div class="categories-content">
+            <div class="categories-main">
+              <!-- 左侧分类树 -->
+              <div class="category-tree">
+                <el-tree
+                  ref="categoryTree"
+                  :data="categoryTreeData"
+                  :props="treeProps"
+                  node-key="id"
+                  default-expand-all
+                  @node-click="handleNodeClick"
+                  @node-contextmenu="handleNodeContextMenu"
+                >
+                  <template #default="{ node, data }">
+                    <div class="tree-node">
+                      <span>{{ node.label }}</span>
+                      <span class="node-count" v-if="data.count > 0">({{ data.count }})</span>
+                    </div>
+                  </template>
+                </el-tree>
+              </div>
+              
+              <!-- 中间分类编辑 -->
+              <div class="category-edit">
+                <div v-if="!selectedCategory" class="empty-state">
+                <el-icon class="empty-icon"><Grid /></el-icon>
+                <p>请选择一个分类进行编辑</p>
+              </div>
+                <div v-else class="edit-form">
+                  <el-form
+                    ref="categoryForm"
+                    :model="categoryForm"
+                    :rules="categoryRules"
+                    label-width="120px"
+                    class="form"
+                  >
+                    <el-form-item label="分类名称" prop="name">
+                      <el-input v-model="categoryForm.name" placeholder="请输入分类名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="父分类">
+                      <el-select v-model="categoryForm.parentId" placeholder="请选择父分类">
+                        <el-option label="顶级分类" value="0"></el-option>
+                        <el-option
+                          v-for="item in parentCategoryOptions"
+                          :key="item.id"
+                          :label="item.name"
+                          :value="item.id"
+                        ></el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="分类类型">
+                      <el-select v-model="categoryForm.type" placeholder="请选择分类类型">
+                        <el-option label="年级" value="grade"></el-option>
+                        <el-option label="学期" value="semester"></el-option>
+                        <el-option label="科目" value="subject"></el-option>
+                        <el-option label="教材版本" value="version"></el-option>
+                        <el-option label="资料类型" value="type"></el-option>
+                        <el-option label="自定义" value="custom"></el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="显示顺序" prop="sort">
+                      <el-input-number v-model="categoryForm.sort" :min="0" :max="9999"></el-input-number>
+                    </el-form-item>
+                    <el-form-item label="状态">
+                      <el-switch v-model="categoryForm.status"></el-switch>
+                    </el-form-item>
+                    <el-form-item label="分类描述">
+                      <el-input
+                        v-model="categoryForm.description"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="请输入分类描述"
+                      ></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                      <div class="form-actions">
+                        <el-button type="primary" @click="handleSaveCategory">保存</el-button>
+                        <el-button @click="handleCancelEdit">取消</el-button>
+                        <el-button type="danger" @click="handleDeleteCategory" v-if="selectedCategory.id !== '0'">删除</el-button>
+                      </div>
+                    </el-form-item>
+                  </el-form>
                 </div>
-              </el-form-item>
-            </el-form>
+              </div>
+            </div>
+            
+            <!-- 右侧真机模拟 -->
+            <div class="category-preview">
+              <PhoneSimulator>
+                <CategorySimulator :categoryList="activeTab === 'grades' ? grades : formatCategoriesForPreview()" />
+              </PhoneSimulator>
+            </div>
           </div>
-        </div>
-      </div>
-    </el-card>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
     
     <!-- 操作日志 -->
     <el-card class="logs-card">
@@ -117,12 +190,47 @@
         <el-table-column prop="user" label="操作人" width="100"></el-table-column>
       </el-table>
     </el-card>
+    
+    <!-- 年级编辑弹窗 -->
+    <el-dialog
+      v-model="gradeDialogVisible"
+      :title="editingGrade ? '编辑年级' : '添加年级'"
+      width="500px"
+    >
+      <el-form
+        ref="gradeFormRef"
+        :model="gradeForm"
+        :rules="gradeRules"
+        label-width="100px"
+      >
+        <el-form-item label="年级名称" prop="name">
+          <el-input v-model="gradeForm.name" placeholder="请输入年级名称"></el-input>
+        </el-form-item>
+        <el-form-item label="显示顺序" prop="order">
+          <el-input-number v-model="gradeForm.order" :min="0" :max="9999"></el-input-number>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-switch v-model="gradeForm.status"></el-switch>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="gradeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSaveGrade">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, Refresh, Delete, Edit, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { Plus, Refresh, Delete, Edit, ArrowUp, ArrowDown, Grid } from '@element-plus/icons-vue'
+import PhoneSimulator from '../../components/PhoneSimulator.vue'
+import CategorySimulator from '../../components/simulators/CategorySimulator.vue'
+
+// 激活的标签页
+const activeTab = ref('grades')
 
 // 分类树数据
 const categoryTreeData = ref([
@@ -204,6 +312,9 @@ const categoryTreeData = ref([
   }
 ])
 
+// 年级数据
+const grades = ref([])
+
 // 树结构配置
 const treeProps = {
   children: 'children',
@@ -230,6 +341,28 @@ const categoryRules = {
   ],
   sort: [
     { required: true, message: '请输入显示顺序', trigger: 'blur' }
+  ]
+}
+
+// 年级编辑相关
+const gradeDialogVisible = ref(false)
+const editingGrade = ref(null)
+const gradeFormRef = ref(null)
+const gradeForm = reactive({
+  id: '',
+  name: '',
+  order: 0,
+  status: true
+})
+
+// 年级表单验证规则
+const gradeRules = {
+  name: [
+    { required: true, message: '请输入年级名称', trigger: 'blur' },
+    { min: 1, max: 50, message: '年级名称长度在 1 到 50 个字符', trigger: 'blur' }
+  ],
+  order: [
+    { type: 'number', min: 0, message: '显示顺序必须大于等于 0', trigger: 'blur' }
   ]
 }
 
@@ -263,12 +396,28 @@ const operationLogs = ref([
 // 初始化
 onMounted(() => {
   loadCategoryData()
+  loadGrades()
 })
 
 // 加载分类数据
 const loadCategoryData = () => {
   // 这里可以从API获取分类数据
   console.log('Loading category data...')
+}
+
+// 加载年级数据
+const loadGrades = async () => {
+  try {
+    const response = await fetch('/api/categories/grades')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success) {
+        grades.value = data.data
+      }
+    }
+  } catch (error) {
+    console.error('加载年级数据失败:', error)
+  }
 }
 
 // 处理节点点击
@@ -380,6 +529,214 @@ const handleDeleteCategory = () => {
 // 刷新
 const handleRefresh = () => {
   loadCategoryData()
+  if (activeTab.value === 'grades') {
+    loadGrades()
+  }
+}
+
+// 处理添加年级
+const handleAddGrade = () => {
+  editingGrade.value = null
+  Object.assign(gradeForm, {
+    id: '',
+    name: '',
+    order: 0,
+    status: true
+  })
+  gradeDialogVisible.value = true
+}
+
+// 处理编辑年级
+const handleEditGrade = (grade) => {
+  editingGrade.value = grade
+  Object.assign(gradeForm, {
+    id: grade.id,
+    name: grade.name,
+    order: grade.order,
+    status: grade.status
+  })
+  gradeDialogVisible.value = true
+}
+
+// 处理保存年级
+const handleSaveGrade = () => {
+  console.log('开始保存年级...')
+  console.log('gradeFormRef:', gradeFormRef.value)
+  console.log('gradeForm:', gradeForm)
+  
+  // 验证表单
+  if (gradeFormRef.value) {
+    console.log('执行表单验证...')
+    gradeFormRef.value.validate((valid, fields) => {
+      console.log('表单验证结果:', valid, fields)
+      if (!valid) {
+        console.error('表单验证失败:', fields)
+        return
+      }
+      
+      // 表单验证通过，继续保存
+      const saveGrade = async () => {
+        try {
+          console.log('开始发送保存请求...')
+          let response
+          let url
+          let method
+          
+          if (gradeForm.id) {
+            // 编辑年级
+            url = `/api/categories/grades/${gradeForm.id}`
+            method = 'PUT'
+          } else {
+            // 添加年级
+            url = '/api/categories/grades'
+            method = 'POST'
+          }
+          
+          console.log('请求URL:', url)
+          console.log('请求方法:', method)
+          console.log('请求数据:', gradeForm)
+          
+          response = await fetch(url, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gradeForm)
+          })
+          
+          console.log('响应状态:', response.status, response.statusText)
+          
+          if (response.ok) {
+            const data = await response.json()
+            console.log('响应数据:', data)
+            if (data.success) {
+              // 重新加载年级数据
+              console.log('保存成功，重新加载年级数据...')
+              await loadGrades()
+              gradeDialogVisible.value = false
+              
+              // 添加操作日志
+              operationLogs.value.unshift({
+                time: new Date().toLocaleString('zh-CN'),
+                action: gradeForm.id ? '编辑' : '添加',
+                content: `${gradeForm.id ? '修改了' : '添加了'}年级 "${gradeForm.name}"`,
+                user: '管理员'
+              })
+              console.log('保存完成')
+            } else {
+              // 显示错误消息
+              console.error('保存失败:', data.message)
+              alert(data.message || '保存失败')
+            }
+          } else {
+            // 显示错误消息
+            try {
+              const errorData = await response.json()
+              console.error('保存失败:', errorData)
+              alert(errorData.message || '保存失败')
+            } catch (e) {
+              console.error('解析错误响应失败:', e)
+              alert('保存失败，请稍后重试')
+            }
+          }
+        } catch (error) {
+          console.error('保存年级失败:', error)
+          alert('保存失败，请稍后重试')
+        }
+      }
+      
+      saveGrade()
+    })
+  } else {
+    console.error('gradeFormRef is null')
+    alert('保存失败，请稍后重试')
+  }
+}
+
+// 处理删除年级
+const handleDeleteGrade = async (grade) => {
+  try {
+    const response = await fetch(`/api/categories/grades/${grade.id}`, {
+      method: 'DELETE'
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success) {
+        // 重新加载年级数据
+        await loadGrades()
+        
+        // 添加操作日志
+        operationLogs.value.unshift({
+          time: new Date().toLocaleString('zh-CN'),
+          action: '删除',
+          content: `删除了年级 "${grade.name}"`,
+          user: '管理员'
+        })
+      }
+    }
+  } catch (error) {
+    console.error('删除年级失败:', error)
+  }
+}
+
+// 处理年级顺序变化
+const handleGradeOrderChange = async (grade) => {
+  try {
+    const response = await fetch(`/api/categories/grades/${grade.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(grade)
+    })
+  } catch (error) {
+    console.error('更新年级顺序失败:', error)
+  }
+}
+
+// 处理年级状态变化
+const handleGradeStatusChange = async (grade) => {
+  try {
+    const response = await fetch(`/api/categories/grades/${grade.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(grade)
+    })
+  } catch (error) {
+    console.error('更新年级状态失败:', error)
+  }
+}
+
+// 格式化分类数据用于预览
+const formatCategoriesForPreview = () => {
+  const categories = []
+  
+  // 递归遍历分类树，提取顶级分类
+  const traverse = (data) => {
+    data.forEach(item => {
+      // 只提取顶级分类用于预览
+      if (!item.parentId || item.parentId === '0') {
+        categories.push({
+          id: item.id,
+          name: item.name,
+          order: item.sort || 0,
+          status: item.status !== false
+        })
+      }
+      
+      if (item.children) {
+        traverse(item.children)
+      }
+    })
+  }
+  
+  traverse(categoryTreeData.value)
+  
+  // 按排序字段排序
+  return categories.sort((a, b) => (a.order || 0) - (b.order || 0))
 }
 </script>
 
@@ -388,7 +745,18 @@ const handleRefresh = () => {
   padding: 20px;
 }
 
+.categories-tabs {
+  margin-bottom: 24px;
+}
+
 .categories-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.grades-card {
   margin-bottom: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
@@ -407,21 +775,63 @@ const handleRefresh = () => {
   gap: 12px;
 }
 
+/* 分类管理内容布局 */
 .categories-content {
   display: flex;
-  gap: 24px;
-  min-height: 500px;
+  gap: 30px;
+  min-height: 800px;
   padding: 0 24px 24px;
+}
+
+/* 分类管理主要内容 */
+.categories-main {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 800px;
+}
+
+/* 年级管理内容 */
+.grades-content {
+  display: flex;
+  gap: 30px;
+  min-height: 800px;
+  padding: 0 24px 24px;
+}
+
+/* 年级管理主要内容 */
+.grades-main {
+  flex: 1;
+  min-height: 800px;
 }
 
 /* 左侧分类树 */
 .category-tree {
-  flex: 0 0 320px;
+  flex: 0 0 280px;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
   overflow: hidden;
   background-color: #ffffff;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* 左侧年级表格 */
+.grades-table-container {
+  flex: 1;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* 真机模拟 */
+.category-preview {
+  flex: 0 0 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 800px;
 }
 
 .tree-node {
@@ -444,13 +854,13 @@ const handleRefresh = () => {
   border-radius: 10px;
 }
 
-/* 右侧分类编辑 */
+/* 中间分类编辑 */
 .category-edit {
   flex: 1;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
   padding: 24px;
-  min-height: 500px;
+  min-height: 800px;
   background-color: #ffffff;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
 }
@@ -488,6 +898,28 @@ const handleRefresh = () => {
   margin-bottom: 30px;
 }
 
+/* 年级表格样式 */
+.el-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.el-table th {
+  background-color: #f7f7f7;
+  font-weight: bold;
+}
+
+.el-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+/* 年级编辑弹窗样式 */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .categories-content {
@@ -501,6 +933,15 @@ const handleRefresh = () => {
   
   .category-edit {
     min-height: 400px;
+  }
+  
+  .el-table {
+    font-size: 14px;
+  }
+  
+  .el-table th,
+  .el-table td {
+    padding: 10px;
   }
 }
 
@@ -521,6 +962,14 @@ const handleRefresh = () => {
   }
   
   .form-actions button {
+    width: 100%;
+  }
+  
+  .dialog-footer {
+    flex-direction: column;
+  }
+  
+  .dialog-footer button {
     width: 100%;
   }
 }

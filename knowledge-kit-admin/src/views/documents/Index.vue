@@ -23,94 +23,102 @@
         </div>
       </template>
       
-      <!-- 搜索和筛选 -->
-      <div class="search-filter">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-input v-model="searchForm.keyword" placeholder="请输入资料标题" prefix-icon="el-icon-search"></el-input>
-          </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchForm.grade" placeholder="年级">
-              <el-option label="全部" value=""></el-option>
-              <el-option label="幼小衔接" value="幼小衔接"></el-option>
-              <el-option label="小学" value="小学"></el-option>
-              <el-option label="初中" value="初中"></el-option>
-              <el-option label="高中" value="高中"></el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchForm.subject" placeholder="科目">
-              <el-option label="全部" value=""></el-option>
-              <el-option label="语文" value="语文"></el-option>
-              <el-option label="数学" value="数学"></el-option>
-              <el-option label="英语" value="英语"></el-option>
-              <el-option label="物理" value="物理"></el-option>
-              <el-option label="化学" value="化学"></el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="4">
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-col>
-        </el-row>
-      </div>
-      
-      <!-- 资料列表 -->
-      <el-table :data="documentsList" style="width: 100%" border>
-        <el-table-column type="index" label="序号" width="60"></el-table-column>
-        <el-table-column label="预览图" width="100">
-          <template #default="{ row }">
-            <el-image
-              :src="row.previewUrl"
-              fit="cover"
-              style="width: 80px; height: 60px"
-              :preview-src-list="[row.previewUrl]"
-            ></el-image>
-          </template>
-        </el-table-column>
-        <el-table-column prop="title" label="资料标题" min-width="200"></el-table-column>
-        <el-table-column prop="grade" label="年级" width="100"></el-table-column>
-        <el-table-column prop="subject" label="科目" width="100"></el-table-column>
-        <el-table-column prop="type" label="类型" width="100"></el-table-column>
-        <el-table-column prop="version" label="版本" width="100"></el-table-column>
-        <el-table-column prop="downloadCount" label="下载量" width="100"></el-table-column>
-        <el-table-column prop="favoritesCount" label="收藏量" width="100"></el-table-column>
-        <el-table-column prop="uploadDate" label="上传时间" width="180"></el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'danger'">
-              {{ row.status === 'active' ? '活跃' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handlePreview(row)" style="margin-right: 5px">
-              <el-icon><View /></el-icon>
-              预览
-            </el-button>
-            <el-button size="small" type="warning" @click="handleEdit(row)" style="margin-right: 5px">
-              <el-icon><Edit /></el-icon>
-              编辑
-            </el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">
-              <el-icon><Delete /></el-icon>
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      
-      <!-- 分页 -->
-      <div class="pagination">
-        <el-pagination
-          layout="total, prev, pager, next, jumper"
-          :total="total"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        ></el-pagination>
+      <div class="documents-content">
+        <div class="documents-main">
+          <!-- 搜索和筛选 -->
+          <div class="search-filter">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-input v-model="searchForm.keyword" placeholder="请输入资料标题" prefix-icon="el-icon-search"></el-input>
+              </el-col>
+              <el-col :span="6">
+                <el-select v-model="searchForm.grade" placeholder="年级">
+                  <el-option label="全部" value=""></el-option>
+                  <el-option v-for="grade in grades" :key="grade.value" :label="grade.label" :value="grade.value"></el-option>
+                </el-select>
+              </el-col>
+              <el-col :span="6">
+                <el-select v-model="searchForm.subject" placeholder="科目">
+                  <el-option label="全部" value=""></el-option>
+                  <el-option label="语文" value="语文"></el-option>
+                  <el-option label="数学" value="数学"></el-option>
+                  <el-option label="英语" value="英语"></el-option>
+                  <el-option label="物理" value="物理"></el-option>
+                  <el-option label="化学" value="化学"></el-option>
+                </el-select>
+              </el-col>
+              <el-col :span="4">
+                <el-button type="primary" @click="handleSearch">搜索</el-button>
+                <el-button @click="handleReset">重置</el-button>
+              </el-col>
+            </el-row>
+          </div>
+          
+          <!-- 资料列表 -->
+          <el-table :data="documentsList" style="width: 100%" border>
+            <el-table-column type="index" label="序号" width="60"></el-table-column>
+            <el-table-column label="预览图" width="100">
+              <template #default="{ row }">
+                <el-image
+                  :src="row.previewUrl"
+                  fit="cover"
+                  style="width: 80px; height: 60px"
+                  :preview-src-list="[row.previewUrl]"
+                ></el-image>
+              </template>
+            </el-table-column>
+            <el-table-column prop="title" label="资料标题" min-width="200"></el-table-column>
+            <el-table-column prop="grade" label="年级" width="100"></el-table-column>
+            <el-table-column prop="subject" label="科目" width="100"></el-table-column>
+            <el-table-column prop="type" label="类型" width="100"></el-table-column>
+            <el-table-column prop="version" label="版本" width="100"></el-table-column>
+            <el-table-column prop="downloadCount" label="下载量" width="100"></el-table-column>
+            <el-table-column prop="favoritesCount" label="收藏量" width="100"></el-table-column>
+            <el-table-column prop="uploadDate" label="上传时间" width="180"></el-table-column>
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'active' ? 'success' : 'danger'">
+                  {{ row.status === 'active' ? '活跃' : '禁用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" @click="handlePreview(row)" style="margin-right: 5px">
+                  <el-icon><View /></el-icon>
+                  预览
+                </el-button>
+                <el-button size="small" type="warning" @click="handleEdit(row)" style="margin-right: 5px">
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
+                <el-button size="small" type="danger" @click="handleDelete(row)">
+                  <el-icon><Delete /></el-icon>
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          
+          <!-- 分页 -->
+          <div class="pagination">
+            <el-pagination
+              layout="total, prev, pager, next, jumper"
+              :total="total"
+              :page-size="pageSize"
+              :current-page="currentPage"
+              @current-change="handleCurrentChange"
+              @size-change="handleSizeChange"
+            ></el-pagination>
+          </div>
+        </div>
+        
+        <!-- 右侧真机模拟 -->
+        <div class="documents-preview">
+          <PhoneSimulator>
+            <DocumentSimulator :documentList="documentsList" />
+          </PhoneSimulator>
+        </div>
       </div>
     </el-card>
     
@@ -126,10 +134,7 @@
         </el-form-item>
         <el-form-item label="年级" required>
           <el-select v-model="uploadForm.grade" placeholder="请选择年级">
-            <el-option label="幼小衔接" value="幼小衔接"></el-option>
-            <el-option label="小学" value="小学"></el-option>
-            <el-option label="初中" value="初中"></el-option>
-            <el-option label="高中" value="高中"></el-option>
+            <el-option v-for="grade in grades" :key="grade.value" :label="grade.label" :value="grade.value"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="科目" required>
@@ -309,9 +314,44 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { Upload, Download, View, Edit, Delete, Document, Picture, Link, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import PhoneSimulator from '../../components/PhoneSimulator.vue'
+import DocumentSimulator from '../../components/simulators/DocumentSimulator.vue'
+
+// 年级数据
+const grades = ref([
+  { label: '幼小衔接', value: '幼小衔接' },
+  { label: '小学', value: '小学' },
+  { label: '初中', value: '初中' },
+  { label: '高中', value: '高中' }
+])
+
+// 加载年级数据
+const loadGrades = async () => {
+  try {
+    const response = await fetch('/api/categories/grades')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.data) {
+        // 从API获取的年级数据
+        const gradeOptions = data.data.map(item => ({
+          label: item.name,
+          value: item.name
+        }))
+        grades.value = gradeOptions
+      }
+    }
+  } catch (error) {
+    console.error('加载年级数据失败:', error)
+  }
+}
+
+// 初始化
+onMounted(() => {
+  loadGrades()
+})
 
 // 资料列表数据
 const documentsList = ref([
@@ -588,6 +628,27 @@ const copyDownloadLink = (link) => {
   border-radius: 8px;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
   overflow: hidden;
+}
+
+/* 文档管理内容布局 */
+.documents-content {
+  display: flex;
+  gap: 30px;
+  min-height: 800px;
+}
+
+/* 左侧主要内容 */
+.documents-main {
+  flex: 1;
+}
+
+/* 右侧真机模拟 */
+.documents-preview {
+  flex: 0 0 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 800px;
 }
 
 .card-header {

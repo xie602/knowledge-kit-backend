@@ -13,6 +13,10 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/admin/login',
+    redirect: '/login' // 兼容旧的 /admin/login 路径
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/dashboard/Index.vue'),
@@ -40,6 +44,12 @@ const routes = [
     path: '/carousel',
     name: 'Carousel',
     component: () => import('../views/carousel/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/pages',
+    name: 'Pages',
+    component: () => import('../views/pages/PageManager.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -76,7 +86,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth
-  
+
   if (requiresAuth && !authStore.token) {
     next('/login')
   } else {

@@ -16,86 +16,95 @@
             </div>
           </template>
           <div class="components-content">
-            <el-form :model="adComponentsForm" label-width="150px">
-              <el-form-item label="开屏广告">
-                <el-switch v-model="adComponentsForm.splashAd.enabled" @change="handleSplashAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.splashAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.splashAd.adUnitId" placeholder="请输入开屏广告ID"></el-input>
-                  </el-form-item>
-                  <el-form-item label="显示时间" style="margin-left: 30px">
-                    <el-input-number v-model="adComponentsForm.splashAd.displayTime" :min="1" :max="10" :step="1"></el-input-number>
-                    <span class="unit">秒</span>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-              
-              <el-form-item label="Banner广告">
-                <el-switch v-model="adComponentsForm.bannerAd.enabled" @change="handleBannerAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.bannerAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.bannerAd.adUnitId" placeholder="请输入Banner广告ID"></el-input>
-                  </el-form-item>
-                  <el-form-item label="显示位置" style="margin-left: 30px">
-                    <el-select v-model="adComponentsForm.bannerAd.position" placeholder="请选择显示位置">
-                      <el-option label="顶部" value="top"></el-option>
-                      <el-option label="底部" value="bottom"></el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-              
-              <el-form-item label="插屏广告">
-                <el-switch v-model="adComponentsForm.interstitialAd.enabled" @change="handleInterstitialAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.interstitialAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.interstitialAd.adUnitId" placeholder="请输入插屏广告ID"></el-input>
-                  </el-form-item>
-                  <el-form-item label="触发条件" style="margin-left: 30px">
-                    <el-select v-model="adComponentsForm.interstitialAd.trigger" placeholder="请选择触发条件">
-                      <el-option label="页面切换" value="pageChange"></el-option>
-                      <el-option label="定时显示" value="timed"></el-option>
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-              
-              <el-form-item label="激励视频广告">
-                <el-switch v-model="adComponentsForm.rewardedVideoAd.enabled" @change="handleRewardedVideoAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.rewardedVideoAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.rewardedVideoAd.adUnitId" placeholder="请输入激励视频广告ID"></el-input>
-                  </el-form-item>
-                  <el-form-item label="奖励内容" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.rewardedVideoAd.reward" placeholder="请输入奖励内容"></el-input>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-              
-              <el-form-item label="原生广告">
-                <el-switch v-model="adComponentsForm.nativeAd.enabled" @change="handleNativeAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.nativeAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.nativeAd.adUnitId" placeholder="请输入原生广告ID"></el-input>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-              
-              <el-form-item label="格子广告">
-                <el-switch v-model="adComponentsForm.gridAd.enabled" @change="handleGridAdChange">
-                </el-switch>
-                <div v-if="adComponentsForm.gridAd.enabled" class="ad-details">
-                  <el-form-item label="广告ID" style="margin-left: 30px">
-                    <el-input v-model="adComponentsForm.gridAd.adUnitId" placeholder="请输入格子广告ID"></el-input>
-                  </el-form-item>
-                </div>
-              </el-form-item>
-            </el-form>
+            <div class="components-main">
+              <el-form :model="adComponentsForm" label-width="150px">
+                <el-form-item label="开屏广告">
+                  <el-switch v-model="adComponentsForm.splashAd.enabled" @change="handleSplashAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.splashAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.splashAd.adUnitId" placeholder="请输入开屏广告ID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="显示时间" style="margin-left: 30px">
+                      <el-input-number v-model="adComponentsForm.splashAd.displayTime" :min="1" :max="10" :step="1"></el-input-number>
+                      <span class="unit">秒</span>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="Banner广告">
+                  <el-switch v-model="adComponentsForm.bannerAd.enabled" @change="handleBannerAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.bannerAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.bannerAd.adUnitId" placeholder="请输入Banner广告ID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="显示位置" style="margin-left: 30px">
+                      <el-select v-model="adComponentsForm.bannerAd.position" placeholder="请选择显示位置">
+                        <el-option label="顶部" value="top"></el-option>
+                        <el-option label="底部" value="bottom"></el-option>
+                      </el-select>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="插屏广告">
+                  <el-switch v-model="adComponentsForm.interstitialAd.enabled" @change="handleInterstitialAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.interstitialAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.interstitialAd.adUnitId" placeholder="请输入插屏广告ID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="触发条件" style="margin-left: 30px">
+                      <el-select v-model="adComponentsForm.interstitialAd.trigger" placeholder="请选择触发条件">
+                        <el-option label="页面切换" value="pageChange"></el-option>
+                        <el-option label="定时显示" value="timed"></el-option>
+                      </el-select>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="激励视频广告">
+                  <el-switch v-model="adComponentsForm.rewardedVideoAd.enabled" @change="handleRewardedVideoAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.rewardedVideoAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.rewardedVideoAd.adUnitId" placeholder="请输入激励视频广告ID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="奖励内容" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.rewardedVideoAd.reward" placeholder="请输入奖励内容"></el-input>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="原生广告">
+                  <el-switch v-model="adComponentsForm.nativeAd.enabled" @change="handleNativeAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.nativeAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.nativeAd.adUnitId" placeholder="请输入原生广告ID"></el-input>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+                
+                <el-form-item label="格子广告">
+                  <el-switch v-model="adComponentsForm.gridAd.enabled" @change="handleGridAdChange">
+                  </el-switch>
+                  <div v-if="adComponentsForm.gridAd.enabled" class="ad-details">
+                    <el-form-item label="广告ID" style="margin-left: 30px">
+                      <el-input v-model="adComponentsForm.gridAd.adUnitId" placeholder="请输入格子广告ID"></el-input>
+                    </el-form-item>
+                  </div>
+                </el-form-item>
+              </el-form>
+            </div>
+            
+            <!-- 右侧真机模拟 -->
+            <div class="components-preview">
+              <PhoneSimulator>
+                <AdSimulator :adComponents="adComponentsForm" />
+              </PhoneSimulator>
+            </div>
           </div>
         </el-card>
       </el-tab-pane>
@@ -370,6 +379,8 @@
 import { ref, reactive, computed } from 'vue'
 import { Plus, Edit, Delete, Check, Download, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import PhoneSimulator from '../../components/PhoneSimulator.vue'
+import AdSimulator from '../../components/simulators/AdSimulator.vue'
 
 // 当前激活的标签页
 const activeTab = ref('components')
@@ -694,6 +705,27 @@ const handleCurrentChange = (current) => {
   justify-content: flex-end;
 }
 
+/* 广告组件配置布局 */
+.components-content {
+  display: flex;
+  gap: 30px;
+  min-height: 800px;
+}
+
+/* 左侧主要内容 */
+.components-main {
+  flex: 1;
+}
+
+/* 右侧真机模拟 */
+.components-preview {
+  flex: 0 0 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 800px;
+}
+
 /* 数据统计样式 */
 .stat-card {
   border-radius: 4px;
@@ -743,6 +775,17 @@ const handleCurrentChange = (current) => {
   gap: 10px;
 }
 
+@media (max-width: 1200px) {
+  .components-content {
+    flex-direction: column;
+  }
+  
+  .components-preview {
+    flex: none;
+    min-height: 600px;
+  }
+}
+
 @media (max-width: 768px) {
   .card-header {
     flex-direction: column;
@@ -757,6 +800,15 @@ const handleCurrentChange = (current) => {
   
   .ad-details {
     padding-left: 20px;
+  }
+  
+  .components-content {
+    flex-direction: column;
+  }
+  
+  .components-preview {
+    flex: none;
+    min-height: 600px;
   }
 }
 </style>

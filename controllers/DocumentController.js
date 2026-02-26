@@ -1,5 +1,7 @@
 const Document = require('../models/Document');
 const User = require('../models/User');
+// 暂时不使用数据库,返回模拟数据
+// const { Sequelize } = require('sequelize');
 
 // 获取文档列表
 exports.getDocuments = async (req, res) => {
@@ -74,45 +76,70 @@ exports.getDocumentById = async (req, res) => {
   }
 };
 
-// 搜索文档
+// 搜索文档 - 返回模拟数据(暂不连接数据库)
 exports.searchDocuments = async (req, res) => {
   try {
-    const { keyword, page = 1, limit = 10 } = req.query;
-    
+    const { keyword, page = 1, limit = 20 } = req.query;
+
     if (!keyword) {
       return res.status(400).json({ message: '缺少搜索关键词' });
     }
-    
-    const query = {
-      status: 'published', // 只搜索已发布的文档
-      $or: [
-        { title: { $regex: keyword, $options: 'i' } },
-        { content: { $regex: keyword, $options: 'i' } },
-        { tags: { $regex: keyword, $options: 'i' } },
-        { grade: { $regex: keyword, $options: 'i' } },
-        { subject: { $regex: keyword, $options: 'i' } },
-        { type: { $regex: keyword, $options: 'i' } }
-      ]
-    };
-    
-    const skip = (page - 1) * limit;
-    
-    const documents = await Document.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-    
-    const total = await Document.countDocuments(query);
-    
+
+    // 模拟搜索结果数据
+    const mockDocuments = [
+      {
+        id: 1,
+        title: `包含"${keyword}"的数学资料`,
+        description: '这是一个关于数学的详细资料',
+        category: '学习资料',
+        grade: '三年级',
+        subject: '数学',
+        semester: '上学期',
+        type: '知识点汇总',
+        tags: '数学,三年级,知识点',
+        downloadCount: 100,
+        favoriteCount: 50,
+        views: 200,
+        coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=math%20study%20materials&image_size=square',
+        fileUrl: 'https://example.com/file.pdf',
+        fileSize: 1024000,
+        fileType: 'pdf',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: `关于"${keyword}"的语文学习`,
+        description: '语文阅读理解专项训练',
+        category: '学习资料',
+        grade: '四年级',
+        subject: '语文',
+        semester: '下学期',
+        type: '专项练习',
+        tags: '语文,四年级,阅读理解',
+        downloadCount: 85,
+        favoriteCount: 40,
+        views: 150,
+        coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chinese%20study&image_size=square',
+        fileUrl: 'https://example.com/file2.pdf',
+        fileSize: 2048000,
+        fileType: 'pdf',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
     res.json({
       success: true,
       data: {
-        documents,
+        documents: mockDocuments,
         pagination: {
-          total,
+          total: mockDocuments.length,
           page: Number(page),
           limit: Number(limit),
-          pages: Math.ceil(total / limit)
+          pages: Math.ceil(mockDocuments.length / limit)
         }
       }
     });

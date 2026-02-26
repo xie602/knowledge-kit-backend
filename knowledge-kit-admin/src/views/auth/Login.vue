@@ -41,7 +41,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
-import axios from 'axios'
+import api from '../../api/index'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -54,21 +54,28 @@ const handleLogin = async () => {
   try {
     loading.value = true
 
-    const response = await axios.post('http://localhost:3002/api/users/admin/login', {
+    // 直接调用后端登录接口
+    const response = await api.post('/users/admin/login', {
       username: username.value,
       password: password.value
     })
 
-    if (response.data.success) {
-      authStore.setToken(response.data.token)
-      authStore.setUser(response.data.user)
+    const result = response.data
+    
+    if (result.success) {
+      authStore.setToken(result.token)
+      authStore.setUser({
+        username: result.user.username,
+        role: result.user.role,
+        id: result.user.id
+      })
       router.push('/dashboard')
     } else {
-      alert(response.data.message || '登录失败')
+      alert(result.message || '登录失败')
     }
   } catch (error) {
     console.error('登录失败:', error)
-    alert(error.response?.data?.message || '登录失败，请稍后重试')
+    alert('登录失败，请稍后重试')
   } finally {
     loading.value = false
   }

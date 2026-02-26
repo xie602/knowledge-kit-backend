@@ -15,41 +15,50 @@
         </div>
       </template>
       <div class="recommend-content">
-        <el-table :data="miniProgramList" style="width: 100%">
-          <el-table-column type="index" label="序号" width="60"></el-table-column>
-          <el-table-column label="小程序图标" width="80">
-            <template #default="{ row }">
-              <el-image
-                :src="row.iconUrl"
-                fit="cover"
-                style="width: 48px; height: 48px"
-                round
-              ></el-image>
-            </template>
-          </el-table-column>
-          <el-table-column prop="name" label="小程序名称" min-width="150"></el-table-column>
-          <el-table-column prop="appId" label="小程序AppID" min-width="200"></el-table-column>
-          <el-table-column prop="path" label="跳转路径" min-width="150"></el-table-column>
-          <el-table-column prop="description" label="描述" min-width="200"></el-table-column>
-          <el-table-column prop="sort" label="显示顺序" width="100"></el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="{ row }">
-              <el-switch v-model="row.status" @change="handleStatusChange(row)"></el-switch>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
-            <template #default="{ row }">
-              <el-button size="small" type="primary" @click="handleEditMiniProgram(row)">
-                <el-icon><Edit /></el-icon>
-                编辑
-              </el-button>
-              <el-button size="small" type="danger" @click="handleDeleteMiniProgram(row)">
-                <el-icon><Delete /></el-icon>
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="recommend-main">
+          <el-table :data="miniProgramList" style="width: 100%">
+            <el-table-column type="index" label="序号" width="60"></el-table-column>
+            <el-table-column label="小程序图标" width="80">
+              <template #default="{ row }">
+                <el-image
+                  :src="row.iconUrl"
+                  fit="cover"
+                  style="width: 48px; height: 48px"
+                  round
+                ></el-image>
+              </template>
+            </el-table-column>
+            <el-table-column prop="name" label="小程序名称" min-width="150"></el-table-column>
+            <el-table-column prop="appId" label="小程序AppID" min-width="200"></el-table-column>
+            <el-table-column prop="path" label="跳转路径" min-width="150"></el-table-column>
+            <el-table-column prop="description" label="描述" min-width="200"></el-table-column>
+            <el-table-column prop="sort" label="显示顺序" width="100"></el-table-column>
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="{ row }">
+                <el-switch v-model="row.status" @change="handleStatusChange(row)"></el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="150" fixed="right">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" @click="handleEditMiniProgram(row)">
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
+                <el-button size="small" type="danger" @click="handleDeleteMiniProgram(row)">
+                  <el-icon><Delete /></el-icon>
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        
+        <!-- 右侧真机模拟 -->
+        <div class="recommend-preview">
+          <PhoneSimulator>
+            <RecommendSimulator :miniProgramList="miniProgramList" />
+          </PhoneSimulator>
+        </div>
       </div>
     </el-card>
     
@@ -164,6 +173,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import PhoneSimulator from '../../components/PhoneSimulator.vue'
+import RecommendSimulator from '../../components/simulators/RecommendSimulator.vue'
 
 // 推荐小程序列表
 const miniProgramList = ref([
@@ -405,7 +416,24 @@ const handleResetRelatedConfig = () => {
 }
 
 .recommend-content {
+  display: flex;
+  gap: 30px;
+  min-height: 800px;
   padding: 20px 0;
+}
+
+/* 左侧主要内容 */
+.recommend-main {
+  flex: 1;
+}
+
+/* 右侧真机模拟 */
+.recommend-preview {
+  flex: 0 0 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 800px;
 }
 
 @media (max-width: 768px) {

@@ -28,6 +28,10 @@
             <el-icon><Picture /></el-icon>
             <span>轮播图管理</span>
           </el-menu-item>
+          <el-menu-item index="/pages">
+            <el-icon><Files /></el-icon>
+            <span>页面管理</span>
+          </el-menu-item>
           <el-menu-item index="/ads">
             <el-icon><Coin /></el-icon>
             <span>广告管理</span>
@@ -85,7 +89,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from './store/auth'
 import { ElMessage } from 'element-plus'
-import { House, Document, Grid, User, Picture, Coin, Refresh, Star, Setting, Menu, ArrowDown } from '@element-plus/icons-vue'
+import { House, Document, Grid, User, Picture, Coin, Refresh, Star, Setting, Menu, ArrowDown, Files } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()

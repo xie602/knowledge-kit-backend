@@ -61,6 +61,12 @@
           </el-table>
         </div>
         
+        <!-- 右侧真机模拟 -->
+        <div class="carousel-preview">
+          <PhoneSimulator>
+            <CarouselSimulator :carouselList="carouselList" />
+          </PhoneSimulator>
+        </div>
 
       </div>
     </el-card>
@@ -87,7 +93,7 @@
       width="600px"
     >
       <el-form
-        ref="carouselForm"
+        ref="carouselFormRef"
         :model="carouselForm"
         :rules="carouselRules"
         label-width="120px"
@@ -96,8 +102,30 @@
         <el-form-item label="轮播图标题" prop="title">
           <el-input v-model="carouselForm.title" placeholder="请输入轮播图标题"></el-input>
         </el-form-item>
-        <el-form-item label="图片链接" prop="imageUrl">
+        <el-form-item label="图片来源">
+          <el-radio-group v-model="imageSource" @change="handleImageSourceChange">
+            <el-radio label="url">图片链接</el-radio>
+            <el-radio label="upload">本地图片</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="图片链接" prop="imageUrl" v-if="imageSource === 'url'">
           <el-input v-model="carouselForm.imageUrl" placeholder="请输入轮播图图片链接"></el-input>
+        </el-form-item>
+        <el-form-item label="本地图片" v-else>
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :auto-upload="false"
+            :on-change="handleImageUpload"
+            :show-file-list="true"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                请上传 JPG、PNG 格式的图片
+              </div>
+            </template>
+          </el-upload>
         </el-form-item>
         <el-form-item label="跳转链接" prop="linkUrl">
           <el-input v-model="carouselForm.linkUrl" placeholder="请输入跳转链接"></el-input>
@@ -112,14 +140,14 @@
           <el-input-number v-model="carouselForm.sort" :min="0" :max="9999"></el-input-number>
         </el-form-item>
         <el-form-item label="自动轮播">
-          <el-switch v-model="carouselForm.autoPlay"></el-switch>
+          <el-switch v-model="carouselForm.autoPlay" @change="handleAutoPlayChange"></el-switch>
         </el-form-item>
         <el-form-item label="轮播间隔" v-if="carouselForm.autoPlay">
           <el-input-number v-model="carouselForm.interval" :min="1000" :max="10000" :step="1000"></el-input-number>
           <span class="unit">毫秒</span>
         </el-form-item>
         <el-form-item label="状态">
-          <el-switch v-model="carouselForm.status"></el-switch>
+          <el-switch v-model="carouselForm.status" @change="handleFormStatusChange"></el-switch>
         </el-form-item>
         <el-form-item label="描述">
           <el-input
@@ -144,50 +172,69 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Plus, Refresh, Delete, Edit, Picture } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import PhoneSimulator from '../../components/PhoneSimulator.vue'
+import CarouselSimulator from '../../components/simulators/CarouselSimulator.vue'
+
+// 从localStorage加载轮播图数据
+const loadCarouselFromStorage = () => {
+  const storedData = localStorage.getItem('carouselList')
+  if (storedData) {
+    return JSON.parse(storedData)
+  }
+  // 默认数据
+  return [
+    {
+      id: '1',
+      title: '暑期学习资料推荐',
+      imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=summer%20study%20materials%20banner%20for%20education%20app&image_size=landscape_16_9',
+      linkUrl: '/documents?category=暑假',
+      linkType: 'internal',
+      sort: 1,
+      autoPlay: true,
+      interval: 3000,
+      status: true,
+      description: '暑期学习资料专题推荐'
+    },
+    {
+      id: '2',
+      title: '中考复习攻略',
+      imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=high%20school%20entrance%20exam%20review%20banner&image_size=landscape_16_9',
+      linkUrl: '/documents?category=中考',
+      linkType: 'internal',
+      sort: 2,
+      autoPlay: true,
+      interval: 3000,
+      status: true,
+      description: '中考复习资料汇总'
+    },
+    {
+      id: '3',
+      title: '新学期教材抢先看',
+      imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20semester%20textbooks%20preview%20banner&image_size=landscape_16_9',
+      linkUrl: '/documents?category=新学期',
+      linkType: 'internal',
+      sort: 3,
+      autoPlay: true,
+      interval: 3000,
+      status: false,
+      description: '新学期教材预览'
+    }
+  ]
+}
+
+// 保存轮播图数据到localStorage
+const saveCarouselToStorage = (data) => {
+  localStorage.setItem('carouselList', JSON.stringify(data))
+}
 
 // 轮播图列表数据
-const carouselList = ref([
-  {
-    id: '1',
-    title: '暑期学习资料推荐',
-    imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=summer%20study%20materials%20banner%20for%20education%20app&image_size=landscape_16_9',
-    linkUrl: '/documents?category=暑假',
-    linkType: 'internal',
-    sort: 1,
-    autoPlay: true,
-    interval: 3000,
-    status: true,
-    description: '暑期学习资料专题推荐'
-  },
-  {
-    id: '2',
-    title: '中考复习攻略',
-    imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=high%20school%20entrance%20exam%20review%20banner&image_size=landscape_16_9',
-    linkUrl: '/documents?category=中考',
-    linkType: 'internal',
-    sort: 2,
-    autoPlay: true,
-    interval: 3000,
-    status: true,
-    description: '中考复习资料汇总'
-  },
-  {
-    id: '3',
-    title: '新学期教材抢先看',
-    imageUrl: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20semester%20textbooks%20preview%20banner&image_size=landscape_16_9',
-    linkUrl: '/documents?category=新学期',
-    linkType: 'internal',
-    sort: 3,
-    autoPlay: true,
-    interval: 3000,
-    status: false,
-    description: '新学期教材预览'
-  }
-])
+const carouselList = ref(loadCarouselFromStorage())
 
 // 选中的轮播图
 const selectedCarousel = ref(null)
 const carouselDialogVisible = ref(false)
+const carouselFormRef = ref(null) // 表单引用
+const imageSource = ref('url') // 图片来源：url或upload
 const carouselForm = reactive({
   id: '',
   title: '',
@@ -211,7 +258,7 @@ const carouselRules = {
     { required: true, message: '请输入轮播图图片链接', trigger: 'blur' }
   ],
   linkUrl: [
-    { required: true, message: '请输入跳转链接', trigger: 'blur' }
+    // 跳转链接不再必填
   ],
   sort: [
     { required: true, message: '请输入显示顺序', trigger: 'blur' }
@@ -233,8 +280,20 @@ onMounted(() => {
 
 // 加载轮播图数据
 const loadCarouselData = () => {
-  // 这里可以从API获取轮播图数据
-  console.log('Loading carousel data...')
+  // 从localStorage加载轮播图数据
+  console.log('Loading carousel data from localStorage...')
+  
+  try {
+    const storedData = localStorage.getItem('carouselList')
+    if (storedData) {
+      carouselList.value = JSON.parse(storedData)
+      console.log('轮播图数据加载成功:', carouselList.value.length)
+    } else {
+      console.log('No carousel data found in localStorage, using default data')
+    }
+  } catch (error) {
+    console.error('加载轮播图数据出错:', error)
+  }
 }
 
 // 添加轮播图
@@ -273,17 +332,40 @@ const handleEditCarousel = (row) => {
     status: row.status !== false,
     description: row.description || ''
   })
+  // 根据图片URL设置图片源类型
+  if (row.imageUrl && row.imageUrl.startsWith('data:')) {
+    imageSource.value = 'upload'
+  } else {
+    imageSource.value = 'url'
+  }
   // 显示编辑对话框
   carouselDialogVisible.value = true
 }
 
 // 保存轮播图
-const handleSaveCarousel = () => {
+const handleSaveCarousel = async () => {
   // 这里可以实现保存轮播图的逻辑
   console.log('Saving carousel:', carouselForm)
   
   try {
-    // 模拟保存成功
+    // 验证图片是否已设置
+    if (!carouselForm.imageUrl) {
+      ElMessage.error('请设置轮播图图片')
+      return
+    }
+    
+    // 准备请求数据
+    const requestData = {
+      imageUrl: carouselForm.imageUrl,
+      title: carouselForm.title,
+      linkUrl: carouselForm.linkUrl,
+      linkType: carouselForm.linkType,
+      order: carouselForm.sort,
+      status: carouselForm.status ? 'active' : 'inactive',
+      description: carouselForm.description
+    }
+    
+    // 模拟保存成功，直接操作本地数据
     if (carouselForm.id) {
       // 编辑轮播图
       const index = carouselList.value.findIndex(item => item.id === carouselForm.id)
@@ -318,8 +400,11 @@ const handleSaveCarousel = () => {
     
     // 重新排序轮播图
     carouselList.value.sort((a, b) => a.sort - b.sort)
+    // 保存到localStorage
+    saveCarouselToStorage(carouselList.value)
     // 重置状态
     selectedCarousel.value = null
+    imageSource.value = 'url' // 重置图片源为链接
     Object.assign(carouselForm, {
       id: '',
       title: '',
@@ -344,6 +429,7 @@ const handleSaveCarousel = () => {
 const handleCancelEdit = () => {
   // 重置状态
   selectedCarousel.value = null
+  imageSource.value = 'url' // 重置图片源为链接
   Object.assign(carouselForm, {
     id: '',
     title: '',
@@ -374,10 +460,12 @@ const handleDeleteCarousel = (row) => {
       type: 'warning'
     }
   ).then(() => {
-    // 模拟删除成功
+    // 直接删除本地数据
     const index = carouselList.value.findIndex(item => item.id === row.id)
     if (index !== -1) {
       carouselList.value.splice(index, 1)
+      // 保存到localStorage
+      saveCarouselToStorage(carouselList.value)
       ElMessage.success('轮播图删除成功')
     } else {
       ElMessage.error('轮播图不存在')
@@ -417,6 +505,8 @@ const handleDeleteCarousel = (row) => {
 const handleStatusChange = (row) => {
   console.log('Status changed:', row)
   try {
+    // 直接保存到localStorage
+    saveCarouselToStorage(carouselList.value)
     operationLogs.value.unshift({
       time: new Date().toLocaleString('zh-CN'),
       action: '状态变更',
@@ -428,6 +518,39 @@ const handleStatusChange = (row) => {
     console.error('状态变更失败:', error)
     ElMessage.error('状态变更失败，请重试')
   }
+}
+
+// 处理图片源切换
+const handleImageSourceChange = () => {
+  if (imageSource.value === 'upload') {
+    // 切换到上传模式时，清空图片链接
+    carouselForm.imageUrl = ''
+  }
+}
+
+// 处理图片上传
+const handleImageUpload = (file) => {
+  // 这里可以实现图片上传逻辑
+  console.log('Uploading image:', file)
+  
+  // 模拟上传成功，使用临时URL
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    carouselForm.imageUrl = e.target.result
+  }
+  reader.readAsDataURL(file.raw)
+}
+
+// 处理自动轮播变更
+const handleAutoPlayChange = (value) => {
+  console.log('Auto play changed:', value)
+  carouselForm.autoPlay = value
+}
+
+// 处理表单状态变更
+const handleFormStatusChange = (value) => {
+  console.log('Status changed:', value)
+  carouselForm.status = value
 }
 
 // 刷新
@@ -459,7 +582,7 @@ const handleRefresh = () => {
 .carousel-content {
   display: flex;
   gap: 30px;
-  min-height: 500px;
+  min-height: 800px;
 }
 
 /* 左侧轮播图列表 */
@@ -468,6 +591,15 @@ const handleRefresh = () => {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
+}
+
+/* 右侧真机模拟 */
+.carousel-preview {
+  flex: 0 0 500px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 800px;
 }
 
 .link-text {

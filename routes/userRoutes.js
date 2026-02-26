@@ -1,74 +1,65 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/UserController');
-const { auth, adminAuth } = require('../middleware/auth');
+const UserController = require('../controllers/UserController');
 
-// Web后台管理员登录
-router.post('/admin/login', userController.adminLogin);
+// 管理员登录
+router.post('/admin/login', UserController.adminLogin);
 
 // 用户登录/注册
-router.post('/login', userController.login);
+router.post('/login', UserController.login);
 
-// 获取用户信息（需要认证）
-router.get('/me', auth, userController.getUserInfo);
+// 获取用户信息
+router.get('/info', UserController.getUserInfo);
 
-// 验证卡片（需要认证）
-router.post('/verify-card', auth, userController.verifyCard);
+// 验证卡片
+router.post('/verify-card', UserController.verifyCard);
 
-// 获取用户统计数据（需要认证）
-router.get('/stats', auth, userController.getUserStats);
+// 获取用户统计数据
+router.get('/stats', UserController.getUserStats);
 
-// 检查文档是否被收藏（需要认证）
-router.get('/favorites/:documentId', auth, userController.checkFavorite);
+// 检查文档是否被收藏
+router.get('/favorite/:documentId', UserController.checkFavorite);
 
-// 以下为管理相关的API端点（需要管理员权限）
+// 创建管理员
+router.post('/admin/create', UserController.createAdmin);
 
-// 创建管理员（仅限管理员）
-router.post('/admins', adminAuth, userController.createAdmin);
+// 获取所有用户
+router.get('/admin/list', UserController.getAllUsers);
 
-// 获取所有用户（仅限管理员）
-router.get('/', adminAuth, userController.getAllUsers);
+// 更新用户角色
+router.put('/admin/role/:userId', UserController.updateUserRole);
 
-// 更新用户角色（仅限管理员）
-router.put('/:userId/role', adminAuth, userController.updateUserRole);
+// 批量生成卡密
+router.post('/admin/generate-cards', UserController.generateCards);
 
-// 手动设置用户为永久用户（仅限管理员）
-router.put('/:userId/permanent', adminAuth, userController.setPermanentUser);
+// 查看卡密使用情况
+router.get('/admin/cards', UserController.getCards);
 
-// 更新用户状态（仅限管理员）
-router.put('/:userId/status', adminAuth, userController.updateUserStatus);
+// 禁用卡密
+router.put('/admin/card/disable/:cardNumber', UserController.disableCard);
 
-// 用户数据分析（仅限管理员）
-router.get('/analysis', adminAuth, userController.analyzeUsers);
+// 禁用过期卡密
+router.put('/admin/cards/disable-expired', UserController.disableExpiredCards);
 
-// 卡密管理相关端点（仅限管理员）
+// 手动设置用户为永久用户
+router.put('/admin/user/permanent/:userId', UserController.setPermanentUser);
 
-// 批量生成卡密（仅限管理员）
-router.post('/cards', adminAuth, userController.generateCards);
+// 用户数据分析
+router.get('/admin/analyze', UserController.analyzeUsers);
 
-// 查看卡密使用情况（仅限管理员）
-router.get('/cards', adminAuth, userController.getCards);
+// 用户状态管理
+router.put('/admin/user/status/:userId', UserController.updateUserStatus);
 
-// 禁用卡密（仅限管理员）
-router.put('/cards/:cardNumber/disable', adminAuth, userController.disableCard);
+// 获取单个用户
+router.get('/admin/user/:userId', UserController.getUserById);
 
-// 禁用过期卡密（仅限管理员）
-router.post('/cards/disable-expired', adminAuth, userController.disableExpiredCards);
+// 后台通用更新用户
+router.put('/admin/user/:userId', UserController.updateUser);
 
-// 管理后台兼容路由：获取单个用户、更新用户、删除用户、导出用户数据
-// 获取单个用户信息（仅限管理员）
-router.get('/:userId', adminAuth, userController.getUserById);
+// 删除用户
+router.delete('/admin/user/:userId', UserController.deleteUser);
 
-// 更新用户（包含角色、下载次数等，可用于后台通用更新）
-router.put('/:userId', adminAuth, userController.updateUser);
-
-// 删除用户（仅限管理员）
-router.delete('/:userId', adminAuth, userController.deleteUser);
-
-// 导出用户数据（仅限管理员）
-router.get('/export', adminAuth, userController.exportUsers);
-
-// Web 后台常用的个人信息接口别名（兼容前端 /users/profile）
-router.get('/profile', auth, userController.getUserInfo);
+// 导出用户数据
+router.get('/admin/export', UserController.exportUsers);
 
 module.exports = router;
